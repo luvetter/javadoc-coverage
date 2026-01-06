@@ -15,7 +15,11 @@
  */
 package com.manoelcampos.javadoc.coverage.exporter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.manoelcampos.javadoc.coverage.Utils;
 import com.manoelcampos.javadoc.coverage.configuration.Configuration;
@@ -42,6 +46,25 @@ public class HtmlExporter extends AbstractDataExporter {
         getWriter().printf("<tr>" + COLUMNS + "</tr>", "<strong>Project Documentation Coverage</strong>", "", "",
                 stats.getNumberOfDocumentableMembers(), stats.getUndocumentedMembersOfElement(),
                 stats.getNumberOfDocumentedMembers(), stats.getDocumentedMembersPercent());
+        List<ClassDocStats> classDocStats = new ArrayList<>();
+        List<MethodDocStats> methodDocStats = new ArrayList<>();
+        for (PackageDocStats pds : stats.getPackagesDocStats()) {
+            classDocStats.addAll(pds.getClassDocs());
+            for (ClassDocStats c : pds.getClassDocs()) {
+                methodDocStats.addAll(c.getMethodsStats());
+            }
+        }
+        exportTotalMemberCoverage(classDocStats);
+        exportTotalMemberCoverage(methodDocStats);
+    }
+
+    private void exportTotalMemberCoverage(List<? extends MembersDocStats> stats) {
+        Map<Boolean, List<MembersDocStats>> collect = stats.stream().collect(Collectors.groupingBy(MembersDocStats::isDocumented));
+        long doced = collect.get(true).size();
+        long undoced = collect.get(false).size();
+        long docuable = doced + undoced;
+        double pre = ((double) doced / docuable) * 100;
+        getWriter().printf("<tr>" + COLUMNS + "</tr>", "<strong>" + stats.get(0).getType() + " Coverage</strong>", "", "", docuable, undoced, doced, pre);
     }
 
     @Override
