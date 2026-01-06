@@ -48,14 +48,17 @@ public class HtmlExporter extends AbstractDataExporter {
                 stats.getNumberOfDocumentedMembers(), stats.getDocumentedMembersPercent());
         List<ClassDocStats> classDocStats = new ArrayList<>();
         List<MethodDocStats> methodDocStats = new ArrayList<>();
+        List<MethodDocStats> constructor = new ArrayList<>();
         for (PackageDocStats pds : stats.getPackagesDocStats()) {
             classDocStats.addAll(pds.getClassDocs());
             for (ClassDocStats c : pds.getClassDocs()) {
                 methodDocStats.addAll(c.getMethodsStats());
+                constructor.addAll(c.getConstructorsStats());
             }
         }
         exportTotalMemberCoverage(classDocStats);
         exportTotalMemberCoverage(methodDocStats);
+        exportTotalMemberCoverage(constructor);
     }
 
     private void exportTotalMemberCoverage(List<? extends MembersDocStats> stats) {
